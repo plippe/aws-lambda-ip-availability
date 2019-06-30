@@ -9,6 +9,10 @@
   },
   "scripts": {
     "format": "prettier --write src/* src/**/*",
-    "package": "npm install && rm -f package.zip && cd src && zip -r ../package.zip ../node_modules ."
+    "package": "npm install && rm -f package.zip && cd src && zip -r /tmp/aws-lambda-ip-availability.zip ../node_modules .",
+    "publish": "aws lambda update-function-code --function-name aws-lambda-ip-availability --zip-file fileb:///tmp/aws-lambda-ip-availability.zip",
+    "create-cloudformation-stack": "aws cloudformation create-stack --stack-name aws-lambda-ip-availability --template-body file://aws/resources.yml --capabilities CAPABILITY_NAMED_IAM",
+    "update-cloudformation-stack": "aws cloudformation update-stack --stack-name aws-lambda-ip-availability --template-body file://aws/resources.yml --capabilities CAPABILITY_NAMED_IAM",
+    "delete-cloudformation-stack": "aws cloudformation delete-stack --stack-name aws-lambda-ip-availability"
   }
 }

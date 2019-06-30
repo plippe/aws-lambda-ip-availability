@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Lambda IP Availability
+
+Parameters:
+  Name:
+    Type: String
+    Default: "aws-lambda-ip-availability"
+
+Resources:
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref Name
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "lambda.amazonaws.com"
+
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref Name
+      Role: !GetAtt Role.Arn
+      Timeout: 60 # seconds
+      Runtime: "nodejs8.10" # nodejs10.x doesn't support zip file
+      Handler: "index.handler"
+      Code:
+        ZipFile: "//"
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+      LogGroupName: !Join [ "", [ "/aws/lambda/", !Ref Name ] ]
+
+  RoleCloudWatchLog:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Join [ "", [ !Ref Name, "-cloudwatch-log" ] ]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "logs:CreateLogGroup"
+            Resource: !Join [ "", [ "arn:aws:logs:", !Ref "AWS::Region", ":", !Ref "AWS::AccountId", ":log-group:", !Ref LogGroup ] ]
+          -
+            Effect: "Allow"
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: !GetAtt LogGroup.Arn
+      Roles:
+        - !Ref Role
+
+  RoleEc2:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Join [ "", [ !Ref Name, "-ec2" ] ]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "ec2:DescribeRegions"
+              - "ec2:DescribeSubnets"
+            Resource: "*"
+      Roles:
+        - !Ref Role
+
+  RoleCloudWatchMetric:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Join [ "", [ !Ref Name, "-cloudwatch-metric" ] ]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "cloudwatch:PutMetricData"
+            Resource: "*"
+      Roles:
+        - !Ref Role
+
+  Event:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Ref Name
+      ScheduleExpression: "rate(1 hour)"
+      Targets:
+        -
+          Id: "Target-1"
+          Arn: !GetAtt Function.Arn
+
+  EventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Principal: "events.amazonaws.com"
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref Function
+      SourceArn: !GetAtt Event.Arn
