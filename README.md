@@ -16,3 +16,21 @@ divided by region, by vpc, and by subnet.
 npm install
 AWS_REGION=us-east-1 node src/index.js
 ```
+
+### AWS Lambda
+This application works best as a function on AWS Lambda. All the scripts are
+available to create the stack, and publish the function.
+
+```sh
+# Install dependencies
+npm install
+
+# Create AWS CloudFormation stack (can take some time)
+npm run create-stack
+
+# Create a zip archive
+npm run package
+
+# Publish the code
+npm run publish
+```
