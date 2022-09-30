@@ -26,11 +26,16 @@ available to create the stack, and publish the function.
 npm install
 
 # Create AWS CloudFormation stack (can take some time)
-npm run create-stack
+npm run create-cloudformation-stack
 
 # Create a zip archive
 npm run package
 
 # Publish the code
 npm run publish
+
+...
+
+# Delete AWS CloudFormation stack (when you are done)
+npm run delete-cloudformation-stack
 ```
