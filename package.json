@@ -1,7 +1,7 @@
 {
   "name": "aws-lambda-ip-availability",
   "dependencies": {
-    "aws-sdk": "2.476.0",
+    "aws-sdk": "2.1354.0",
     "ip-cidr": "2.0.2"
   },
   "devDependencies": {
